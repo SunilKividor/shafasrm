@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatalln("Error loading .env")
 	}
@@ -23,6 +23,7 @@ func main() {
 	}
 
 	port := os.Getenv("PORT")
+	log.Println(port)
 	server := server.NewServer(port)
 	err = server.RunServer()
 	if err != nil {

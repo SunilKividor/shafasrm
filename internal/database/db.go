@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/SunilKividor/shafasrm/internal/database/postgres"
+	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
 )
 
 func InitPostgresql() error {
@@ -13,12 +13,12 @@ func InitPostgresql() error {
 	password := os.Getenv("Password")
 	dbName := os.Getenv("DBName")
 	sslMode := os.Getenv("SSLMode")
-	port := os.Getenv("PORT")
+	port := os.Getenv("DB_PORT")
 	portInt, err := strconv.Atoi(port)
 	if err != nil {
 		portInt = 5432
 	}
-	cfg := postgres.NewPostgresConfig(
+	cfg := pgdb.NewPostgresConfig(
 		host,
 		portInt,
 		user,

@@ -23,6 +23,7 @@ func (server *Server) RunServer() error {
 		port = "8080"
 		log.Println("Defaulting to port:8080")
 	}
+	log.Println(port)
 	r := gin.Default()
 
 	router.Router(r)

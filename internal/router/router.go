@@ -6,7 +6,23 @@ import (
 )
 
 func Router(router *gin.Engine) {
-	authRouter := router.Group("users")
-	//auth
-	authRouter.POST("/register", handler.Register)
+
+	//cors
+	// router.Use(func(c *gin.Context) {
+	// 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	// 	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, access-control-allow-origin")
+
+	// 	if c.Request.Method == "OPTIONS" {
+	// 		c.AbortWithStatus(http.StatusOK)
+	// 		return
+	// 	}
+
+	// 	c.Next()
+	// })
+
+	//routers
+	authRouter := router.Group("auth")
+
+	authRouter.POST("/register", handler.RegisterUser)
 }
