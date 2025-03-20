@@ -25,4 +25,5 @@ func Router(router *gin.Engine) {
 	authRouter := router.Group("auth")
 
 	authRouter.POST("/register", handler.RegisterUser)
+	authRouter.POST("/login", handler.LoginUser)
 }

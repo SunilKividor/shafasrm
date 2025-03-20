@@ -6,10 +6,68 @@ import (
 	"github.com/SunilKividor/shafasrm/internal/auth"
 	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
 	"github.com/SunilKividor/shafasrm/internal/models"
-	"github.com/SunilKividor/shafasrm/internal/repository/pgrepo"
+	pgrepo "github.com/SunilKividor/shafasrm/internal/repository/pgrepo/auth"
 	"github.com/SunilKividor/shafasrm/internal/util"
 	"github.com/gin-gonic/gin"
 )
+
+func LoginUser(c *gin.Context) {
+	var body models.LoginRequestBody
+	err := c.ShouldBind(&body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid request body",
+		})
+		return
+	}
+
+	pgDBClient := pgdb.GetDBClient()
+	postgresRepo := pgrepo.NewPGRepo(pgDBClient)
+
+	id, password, err := postgresRepo.GetIDPasswordQuery(body.Username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg":   "Getting Hashed Password",
+			"error": err.Error(),
+		})
+		return
+	}
+
+	isVerified := util.ComparePassword(password, body.Password)
+	if !isVerified {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg":   "password did not match",
+			"error": "Error validating Password",
+		})
+		return
+	}
+
+	accessToken, refreshToken, err := auth.GenerateTokens(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg":   "Generating Tokens",
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = postgresRepo.UpdateRefreshToken(refreshToken, id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg":   "Updating Refresh Token",
+			"error": err.Error(),
+		})
+		return
+	}
+
+	var res models.AuthResBody
+	res.AccessToken = accessToken
+	res.RefreshToken = refreshToken
+	c.JSON(
+		http.StatusOK,
+		res,
+	)
+}
 
 func RegisterUser(c *gin.Context) {
 	var registerReqBody models.RegisterRequestBody

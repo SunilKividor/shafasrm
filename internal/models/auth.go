@@ -20,6 +20,11 @@ type AuthResBody struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type LoginRequestBody struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type RefreshreqModel struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
