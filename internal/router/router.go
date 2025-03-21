@@ -21,5 +21,7 @@ func Router(router *gin.Engine) {
 
 	//user routes
 	userRouter.POST("/profile/create", handler.CreateUserProfile)
+	userRouter.POST("/matches/create", handler.CreateMatch)
+	userRouter.GET("/matches", handler.GetMatches)
 	userRouter.DELETE("/", handler.DeleteUser)
 }
