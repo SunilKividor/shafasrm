@@ -6,7 +6,7 @@ import (
 	"github.com/SunilKividor/shafasrm/internal/auth"
 	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
 	"github.com/SunilKividor/shafasrm/internal/models"
-	pgrepo "github.com/SunilKividor/shafasrm/internal/repository/pgrepo/auth"
+	"github.com/SunilKividor/shafasrm/internal/repository/pgrepo"
 	"github.com/SunilKividor/shafasrm/internal/util"
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +16,8 @@ func LoginUser(c *gin.Context) {
 	err := c.ShouldBind(&body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid request body",
+			"msg":   "invalid request body",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -27,7 +28,7 @@ func LoginUser(c *gin.Context) {
 	id, password, err := postgresRepo.GetIDPasswordQuery(body.Username)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "Getting Hashed Password",
+			"msg":   "error getting Hashed Password",
 			"error": err.Error(),
 		})
 		return
@@ -109,10 +110,18 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	err = postgresRepo.AddNewUserToRanking(userID)
+	if err != nil {
+		c.JSON(http.StatusCreated, gin.H{
+			"msg":   "error adding user to ranking",
+			"error": err.Error(),
+		})
+	}
+
 	accessToken, refreshToken, err := auth.GenerateTokens(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg":   "erro creating access and refresh tokens",
+			"msg":   "error creating access and refresh tokens",
 			"error": err.Error(),
 		})
 		return

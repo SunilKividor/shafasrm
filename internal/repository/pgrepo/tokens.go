@@ -1,6 +1,8 @@
 package pgrepo
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 func (dbClient *PGRepo) AddRefreshToken(refreshToken string, user_id uuid.UUID) error {
 	db := dbClient.PostgresDBClient

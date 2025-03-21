@@ -23,7 +23,10 @@ func Router(router *gin.Engine) {
 
 	//routers
 	authRouter := router.Group("auth")
+	userRouter := router.Group("user")
 
 	authRouter.POST("/register", handler.RegisterUser)
 	authRouter.POST("/login", handler.LoginUser)
+
+	userRouter.DELETE("/", handler.DeleteUser)
 }

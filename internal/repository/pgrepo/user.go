@@ -35,3 +35,11 @@ func (dbClient *PGRepo) GetIDPasswordQuery(username string) (uuid.UUID, string, 
 	}
 	return id, password, nil
 }
+
+func (dbClient *PGRepo) DeleteUser(user_id uuid.UUID) error {
+	db := dbClient.PostgresDBClient
+	smt := `DELETE FROM users WHERE id = $1`
+
+	_, err := db.Exec(smt, user_id)
+	return err
+}
