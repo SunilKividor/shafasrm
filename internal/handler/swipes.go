@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AddSwipe(c *gin.Context) {
+func Swipe(c *gin.Context) {
 	var swipeReq models.SwipeReq
 
 	err := c.ShouldBind(&swipeReq)
@@ -45,7 +45,7 @@ func AddSwipe(c *gin.Context) {
 	pgDBClient := pgdb.GetDBClient()
 	postgresRepo := pgrepo.NewPGRepo(pgDBClient)
 
-	err = postgresRepo.AddSwipeAction(swipe)
+	err = postgresRepo.Swipe(swipe)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
@@ -58,4 +58,36 @@ func AddSwipe(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func SwipeFeed(c *gin.Context) {
+
+	id, err := auth.ExtractIdFromContext(c)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"msg":   "error getting user id from token",
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	pgDBClient := pgdb.GetDBClient()
+	postgresRepo := pgrepo.NewPGRepo(pgDBClient)
+
+	feed, err := postgresRepo.SwipeFeed(id)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"msg":   "error getting feed",
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, feed)
 }

@@ -12,3 +12,7 @@ type SwipeReq struct {
 	SwipedID uuid.UUID `json:"swiped_id"`
 	Action   string    `json:"action"`
 }
+
+type SwipeFeed struct {
+	Matches []uuid.UUID `json:"matches"`
+}
