@@ -25,11 +25,3 @@ type UserProfile struct {
 	TroubleSign  int       `json:"trouble_sign"`
 	CampusRumor  string    `json:"campus_rumor"`
 }
-
-type Match struct {
-	UserID uuid.UUID `json:"user_id"`
-}
-
-type Matches struct {
-	UserIDs []uuid.UUID `json:"user_ids"`
-}
