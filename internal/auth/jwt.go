@@ -23,7 +23,7 @@ func GenerateTokens(id uuid.UUID) (string, string, error) {
 	accessClaims := jwt.MapClaims{
 		"authorized": true,
 		"id":         id.String(),
-		"exp":        time.Now().Add(time.Minute * time.Duration(10)).Unix(),
+		"exp":        time.Now().Add(time.Hour * time.Duration(12)).Unix(),
 	}
 
 	refresh := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)

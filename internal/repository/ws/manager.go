@@ -5,6 +5,9 @@ import (
 	"net/http"
 
 	"github.com/SunilKividor/shafasrm/internal/auth"
+	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
+	"github.com/SunilKividor/shafasrm/internal/models"
+	"github.com/SunilKividor/shafasrm/internal/repository/pgrepo"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -19,24 +22,23 @@ var (
 
 type Manager struct {
 	Clients map[uuid.UUID]*Client
-	Rooms   map[string]*Room
+	Rooms   map[uuid.UUID]*Room
+	PGRepo  *pgrepo.PGRepo
 }
 
 type Room struct {
-	MatchID string
+	MatchID uuid.UUID
 	Clients map[*Client]bool
-	Bcast   chan Message
-}
-
-type Message struct {
-	SenderID uuid.UUID `json:"sender_id"`
-	Content  string    `json:"content"`
+	Bcast   chan models.ChatMessage
 }
 
 func NewManager() *Manager {
+	pgDBClient := pgdb.GetDBClient()
+	pgRepo := pgrepo.NewPGRepo(pgDBClient)
 	return &Manager{
 		Clients: make(map[uuid.UUID]*Client),
-		Rooms:   make(map[string]*Room),
+		Rooms:   make(map[uuid.UUID]*Room),
+		PGRepo:  pgRepo,
 	}
 }
 
@@ -54,7 +56,8 @@ func (manager *Manager) ServeWS(c *gin.Context) {
 		return
 	}
 
-	match_id := c.Query("matchID")
+	match_id_str := c.Query("match_id")
+	match_id := uuid.MustParse(match_id_str)
 
 	conn, err := websocketUpgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -77,7 +80,7 @@ func (m *Manager) RegisterClient(client *Client) {
 		room = &Room{
 			MatchID: client.MatchID,
 			Clients: make(map[*Client]bool),
-			Bcast:   make(chan Message),
+			Bcast:   make(chan models.ChatMessage),
 		}
 		m.Rooms[client.MatchID] = room
 		go room.run()

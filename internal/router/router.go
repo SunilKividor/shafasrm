@@ -23,6 +23,7 @@ func Router(router *gin.Engine) {
 	userRouter.POST("/profile/create", handler.CreateUserProfile)
 	userRouter.POST("/matches/create", handler.CreateMatch)
 	userRouter.GET("/matches", handler.GetMatches)
+	userRouter.GET("/matches/:match_id/messages", handler.GetMessages)
 	userRouter.POST("/swipe", handler.Swipe)
 	userRouter.GET("/swipe/feed", handler.SwipeFeed)
 	userRouter.DELETE("/", handler.DeleteUser)

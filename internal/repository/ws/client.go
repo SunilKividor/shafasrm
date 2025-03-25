@@ -3,6 +3,9 @@ package ws
 import (
 	"log"
 
+	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
+	"github.com/SunilKividor/shafasrm/internal/models"
+	"github.com/SunilKividor/shafasrm/internal/repository/pgrepo"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -10,16 +13,16 @@ import (
 type Client struct {
 	Conn    *websocket.Conn
 	UserID  uuid.UUID
-	MatchID string
-	Send    chan Message
+	MatchID uuid.UUID
+	Send    chan models.ChatMessage
 }
 
-func newClient(conn *websocket.Conn, user_id uuid.UUID, match_id string) *Client {
+func newClient(conn *websocket.Conn, user_id uuid.UUID, match_id uuid.UUID) *Client {
 	return &Client{
 		Conn:    conn,
 		UserID:  user_id,
 		MatchID: match_id,
-		Send:    make(chan Message, 10),
+		Send:    make(chan models.ChatMessage, 10),
 	}
 }
 
@@ -28,7 +31,7 @@ func (c *Client) ReadConn(m *Manager) {
 		m.UnRegister(c)
 		c.Conn.Close()
 	}()
-	var msg Message
+	var msg models.ChatMessage
 	for {
 		err := c.Conn.ReadJSON(&msg)
 		if err != nil {
@@ -38,13 +41,21 @@ func (c *Client) ReadConn(m *Manager) {
 			break
 		}
 
+		//insert msg in DB
+		pgDBClient := pgdb.GetDBClient()
+		postgresRepo := pgrepo.NewPGRepo(pgDBClient)
+
+		msg.MatchID = c.MatchID
 		msg.SenderID = c.UserID
+
+		err = postgresRepo.AddMessage(msg)
+		if err != nil {
+			log.Panicln("Error adding message to the database")
+		}
 
 		if room, ok := m.Rooms[c.MatchID]; ok {
 			room.Bcast <- msg
 		}
-
-		//insert msg in DB
 	}
 }
 
