@@ -26,4 +26,6 @@ func Router(router *gin.Engine) {
 	userRouter.POST("/swipe", handler.Swipe)
 	userRouter.GET("/swipe/feed", handler.SwipeFeed)
 	userRouter.DELETE("/", handler.DeleteUser)
+
+	router.GET("/ws", handler.HanldeWSConnection)
 }
