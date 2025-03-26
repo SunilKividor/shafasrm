@@ -20,8 +20,8 @@ func NewServer(port string) *Server {
 func (server *Server) RunServer() error {
 	port := server.Port
 	if port == "" {
-		port = "8080"
-		log.Println("Defaulting to port:8080")
+		port = "3000"
+		log.Println("Defaulting to port:3000")
 	}
 	log.Println(port)
 	r := gin.Default()
