@@ -27,5 +27,5 @@ redo:
 status:
 	goose -dir ${MIGRATIONS_DIR} postgres "${DB_URL}" status
 
-run: up
+run:
 	go run cmd/app/main.go

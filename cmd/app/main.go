@@ -10,9 +10,11 @@ import (
 )
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalln("Error loading .env")
+	if os.Getenv("ENVIRONMENT") != "production" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Panicln("Error loading .env file")
+		}
 	}
 }
 
