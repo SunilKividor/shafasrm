@@ -8,12 +8,12 @@ import (
 )
 
 func InitPostgresql() error {
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	sslMode := os.Getenv("DB_SSLMODE")
-	port := os.Getenv("DB_PORT")
+	host := os.Getenv("POSTGRES_HOST")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
+	sslMode := os.Getenv("POSTGRES_SSLMODE")
+	port := os.Getenv("POSTGRES_PORT")
 	portInt, err := strconv.Atoi(port)
 	if err != nil {
 		portInt = 5432

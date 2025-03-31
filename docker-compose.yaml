@@ -4,9 +4,9 @@ services:
     shafasrm-postgres:
       image: postgres:latest
       environment:
-        POSTGRES_USER: shafasrmadmin
-        POSTGRES_PASSWORD: shafasrm2723
-        POSTGRES_DB: shafasrm
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
       volumes:
         - postgres-data:/var/lib/postgresql/data
       healthcheck:
@@ -20,8 +20,8 @@ services:
         context: .
         dockerfile: Dockerfile.migration
       environment:
-        GOOSE_DRIVER: postgres
-        GOOSE_DBSTRING: postgres://shafasrmadmin:shafasrm2723@shafasrm-postgres:5432/shafasrm?sslmode=disable
+        GOOSE_DRIVER: ${GOOSE_DRIVER}
+        GOOSE_DBSTRING: ${GOOSE_DBSTRING}
       depends_on:
         shafasrm-postgres:
           condition: service_healthy
@@ -31,15 +31,15 @@ services:
         context: .
         dockerfile: Dockerfile.app
       environment:
-          DB_HOST: shafasrm-postgres
-          DB_PORT: 5432
-          DB_USER: shafasrmadmin
-          DB_PASSWORD: shafasrm2723
-          DB_NAME: shafasrm
-          DB_SSLMODE: disable
-          APISECRET: wejknfqlehfjqbjy3foqu3y
-          PORT: 3000
-          ENVIRONMENT: production
+          POSTGRES_HOST: ${POSTGRES_HOST}
+          POSTGRES_PORT: ${POSTGRES_PORT}
+          POSTGRES_USER: ${POSTGRES_USER}
+          POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+          POSTGRES_DB: ${POSTGRES_DB}
+          POSTGRES_SSLMODE: ${POSTGRES_SSLMODE}
+          APISECRET: ${APISECRET}
+          PORT: ${PORT}
+          ENVIRONMENT: ${ENVIRONMENT}
       ports:
         - "3000:3000"
       depends_on:
