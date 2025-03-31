@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+    shafasrm-postgres:
+      image: postgres:latest
+      environment:
+        POSTGRES_USER: shafasrmadmin
+        POSTGRES_PASSWORD: shafasrm2723
+        POSTGRES_DB: shafasrm
+      volumes:
+        - postgres-data:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U shafasrmadmin -d shafasrm"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+    
+    migrations:
+      build:
+        context: .
+        dockerfile: Dockerfile.migration
+      environment:
+        GOOSE_DRIVER: postgres
+        GOOSE_DBSTRING: postgres://shafasrmadmin:shafasrm2723@shafasrm-postgres:5432/shafasrm?sslmode=disable
+      depends_on:
+        shafasrm-postgres:
+          condition: service_healthy
+    
+    app:
+      build:
+        context: .
+        dockerfile: Dockerfile.app
+      environment:
+          DB_HOST: shafasrm-postgres
+          DB_PORT: 5432
+          DB_USER: shafasrmadmin
+          DB_PASSWORD: shafasrm2723
+          DB_NAME: shafasrm
+          DB_SSLMODE: disable
+          APISECRET: wejknfqlehfjqbjy3foqu3y
+          PORT: 3000
+          ENVIRONMENT: production
+      ports:
+        - "3000:3000"
+      depends_on:
+        migrations:
+          condition: service_completed_successfully
+
+volumes:
+  postgres-data:

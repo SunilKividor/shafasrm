@@ -1,12 +1,24 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/SunilKividor/shafasrm/internal/auth"
 	"github.com/SunilKividor/shafasrm/internal/handler"
 	"github.com/gin-gonic/gin"
 )
 
 func Router(router *gin.Engine) {
+
+	//health-check
+	router.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(
+			http.StatusOK,
+			gin.H{
+				"message": "server running",
+			},
+		)
+	})
 
 	//routers
 	authRouter := router.Group("auth")
