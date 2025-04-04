@@ -2,10 +2,6 @@ package models
 
 import "github.com/google/uuid"
 
-type UserID struct {
-	ID uuid.UUID `json:"id"`
-}
-
 // this stores the options
 type UserProfile struct {
 	UserID       uuid.UUID `json:"user_id"`
@@ -24,4 +20,15 @@ type UserProfile struct {
 	DumbLine     string    `json:"dumb_line"`
 	TroubleSign  int       `json:"trouble_sign"`
 	CampusRumor  string    `json:"campus_rumor"`
+}
+
+type UserDetails struct {
+	Phone      string `json:"phone"`
+	Gender     string `json:"gender"`
+	Birthday   string `json:"birthday"`
+	Location   string `json:"location"`
+	Religion   string `json:"religion"`
+	Department string `json:"department"`
+	Stream     string `json:"stream"`
+	Degree     string `json:"degree"`
 }

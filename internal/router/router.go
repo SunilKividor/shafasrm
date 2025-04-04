@@ -33,6 +33,7 @@ func Router(router *gin.Engine) {
 
 	//user routes
 	userRouter.POST("/profile/create", handler.CreateUserProfile)
+	userRouter.POST("/details/create", handler.AddUserDetails)
 	userRouter.POST("/matches/create", handler.CreateMatch)
 	userRouter.GET("/matches", handler.GetMatches)
 	userRouter.GET("/matches/:match_id/messages", handler.GetMessages)

@@ -25,7 +25,7 @@ func LoginUser(c *gin.Context) {
 	pgDBClient := pgdb.GetDBClient()
 	postgresRepo := pgrepo.NewPGRepo(pgDBClient)
 
-	id, password, err := postgresRepo.GetIDPasswordQuery(body.Username)
+	id, password, err := postgresRepo.GetIDPasswordQuery(body.Email)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg":   "error getting Hashed Password",

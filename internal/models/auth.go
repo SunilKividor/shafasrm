@@ -1,18 +1,9 @@
 package models
 
 type RegisterRequestBody struct {
-	Name       string `json:"name"`
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	Email      string `json:"email"`
-	Phone      string `json:"phone"`
-	Gender     string `json:"gender"`
-	Birthday   string `json:"birthday"`
-	Location   string `json:"location"`
-	Religion   string `json:"religion"`
-	Department string `json:"department"`
-	Stream     string `json:"stream"`
-	Degree     string `json:"degree"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 type AuthResBody struct {
@@ -21,7 +12,7 @@ type AuthResBody struct {
 }
 
 type LoginRequestBody struct {
-	Username string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
