@@ -41,5 +41,8 @@ func Router(router *gin.Engine) {
 	userRouter.GET("/swipe/feed", handler.SwipeFeed)
 	userRouter.DELETE("/", handler.DeleteUser)
 
+	//aws presigned user routes
+	userRouter.POST("/aws/generate-presigned-url", handler.GetPresignedUrl)
+
 	router.GET("/ws", handler.HanldeWSConnection)
 }

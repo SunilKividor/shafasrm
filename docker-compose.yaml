@@ -44,8 +44,13 @@ services:
           POSTGRES_DB: ${POSTGRES_DB}
           POSTGRES_SSLMODE: ${POSTGRES_SSLMODE}
           APISECRET: ${APISECRET}
+          IAMUSERACCESSKEY: ${IAMUSERACCESSKEY}
+          IAMUSERSECRET: ${IAMUSERSECRET}
+          S3BUCKETNAME: ${S3BUCKETNAME}
+          S3BUCKETREGION: ${S3BUCKETREGION}
           PORT: ${PORT}
           ENVIRONMENT: ${ENVIRONMENT}
+
       ports:
         - "3000:3000"
       depends_on:
