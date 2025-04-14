@@ -2,53 +2,98 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
-	"github.com/SunilKividor/shafasrm/internal/configs"
-	"github.com/SunilKividor/shafasrm/internal/models"
+	"github.com/SunilKividor/shafasrm/internal/util"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 )
 
-func GetPreSignedUrl(id uuid.UUID, presignedUrlReq models.PreSignedUrlReq) (string, error) {
-	//user config
-	awsUserId := os.Getenv("IAMUSERACCESSKEY")
-	awsUserSecret := os.Getenv("IAMUSERSECRET")
-	userCongif := configs.NewAwsUserConfig(&awsUserId, &awsUserSecret)
+const (
+	s3UploadKeyPrefix     = "users/uploads"
+	defaultUploadExpiry   = 5 * time.Minute
+	defaultDownloadExpiry = 30 * time.Minute
+)
 
-	log.Println(userCongif)
+type PreSigner interface {
+	GenerateUploadUrl(ctx context.Context, userID uuid.UUID, contentType string) (string, string, error)
+	GenerateDownloadUrl(ctx context.Context, key string) (string, error)
+	VerifyObjectExists(ctx context.Context, key string) (bool, error)
+}
 
-	//s3config
-	awsS3BucketName := os.Getenv("S3BUCKETNAME")
-	awsS3BucketKey := fmt.Sprintf("%s/%s", id.String(), presignedUrlReq.FileName)
-	awsS3BucketRegion := os.Getenv("S3BUCKETREGION")
-	awsS3Config := configs.NewAwsS3Config(&awsS3BucketName, &awsS3BucketRegion)
+type PresignS3Service struct {
+	preSignClient      *s3.PresignClient
+	s3Client           *s3.Client
+	bucketName         string
+	uploadExpiry       time.Duration
+	downloadExpiry     time.Duration
+	uploadKeyGenerator func(userID uuid.UUID) string
+}
 
-	log.Println(awsS3Config)
-
-	//awsConfig
-	awsConfig, err := configs.GetAwsConfig(userCongif, awsS3Config)
-	if err != nil {
-		return "", err
+func NewPresignS3Service(cfg aws.Config, bucketName string) (*PresignS3Service, error) {
+	if bucketName == "" {
+		return nil, errors.New("S3 bucket name cannot be empty")
 	}
 
-	s3Client := s3.NewFromConfig(awsConfig)
-
-	//presign url
+	s3Client := s3.NewFromConfig(cfg)
 	preSignClient := s3.NewPresignClient(s3Client)
-	ctx := context.Background()
+
+	defaultUploadGenerator := func(userID uuid.UUID) string {
+		return util.GenerateNewAWSObjectKey(s3UploadKeyPrefix, userID)
+	}
+
+	return &PresignS3Service{
+		preSignClient:      preSignClient,
+		s3Client:           s3Client,
+		bucketName:         bucketName,
+		uploadExpiry:       defaultUploadExpiry,
+		downloadExpiry:     defaultDownloadExpiry,
+		uploadKeyGenerator: defaultUploadGenerator,
+	}, nil
+}
+
+func (p *PresignS3Service) GenerateUploadUrl(ctx context.Context, userID uuid.UUID, contentType string) (string, string, error) {
+	if contentType == "" {
+		return "", "", errors.New("content type is required")
+	}
+	preSignClient := p.preSignClient
+
+	key := p.uploadKeyGenerator(userID)
+
 	preSignReq, err := preSignClient.PresignPutObject(ctx, &s3.PutObjectInput{
-		Bucket:      awsS3Config.BucketName,
-		Key:         &awsS3BucketKey,
-		ContentType: &presignedUrlReq.MIME,
-	}, s3.WithPresignExpires(5*time.Minute),
+		Bucket:      &p.bucketName,
+		Key:         &key,
+		ContentType: &contentType,
+	}, s3.WithPresignExpires(p.uploadExpiry),
 	)
 
 	if err != nil {
-		return "", err
+		log.Printf("Failed to generate pre-signed PUT URL for key %s: %v", key, err)
+		return "", "", fmt.Errorf("failed to sign upload request: %w", err)
+	}
+
+	return preSignReq.URL, key, nil
+}
+
+func (p *PresignS3Service) GenerateDownloadUrl(ctx context.Context, key string) (string, error) {
+	if key == "" {
+		return "", errors.New("key is required")
+	}
+	preSignClient := p.preSignClient
+
+	preSignReq, err := preSignClient.PresignGetObject(ctx, &s3.GetObjectInput{
+		Bucket: &p.bucketName,
+		Key:    &key,
+	}, s3.WithPresignExpires(p.downloadExpiry),
+	)
+
+	if err != nil {
+		log.Printf("Failed to generate pre-signed GET URL for key %s: %v", key, err)
+		return "", fmt.Errorf("failed to sign download request: %w", err)
 	}
 
 	return preSignReq.URL, nil

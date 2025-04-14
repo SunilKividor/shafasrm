@@ -1,11 +1,11 @@
 package models
 
 type PreSignedUrlReq struct {
-	FileName string `json:"filename"`
-	Size     string `json:"size"`
-	MIME     string `json:"mime"`
+	Size string `json:"size"`
+	MIME string `json:"mime"`
 }
 
 type PreSignedUrlRes struct {
+	Key string `json:"key"`
 	Url string `json:"url"`
 }

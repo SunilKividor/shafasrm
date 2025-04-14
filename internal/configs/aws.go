@@ -2,6 +2,7 @@ package configs
 
 import (
 	"context"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -45,4 +46,20 @@ func GetAwsConfig(awsUser *AwsUserConfig, awsS3 *AwsS3Config) (aws.Config, error
 	)
 
 	return cfg, err
+}
+
+func DefaultConfig() (aws.Config, error) {
+	//user config
+	awsUserId := os.Getenv("IAMUSERACCESSKEY")
+	awsUserSecret := os.Getenv("IAMUSERSECRET")
+	userCongif := NewAwsUserConfig(&awsUserId, &awsUserSecret)
+
+	//s3config
+	awsS3BucketName := os.Getenv("S3BUCKETNAME")
+	awsS3BucketRegion := os.Getenv("S3BUCKETREGION")
+	awsS3Config := NewAwsS3Config(&awsS3BucketName, &awsS3BucketRegion)
+
+	//awsConfig
+	awsConfig, err := GetAwsConfig(userCongif, awsS3Config)
+	return awsConfig, err
 }
