@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/SunilKividor/shafasrm/internal/auth"
+	"github.com/SunilKividor/shafasrm/internal/authentication"
 	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
 	"github.com/SunilKividor/shafasrm/internal/models"
 	"github.com/SunilKividor/shafasrm/internal/repository/pgrepo"
@@ -43,7 +43,7 @@ func NewManager() *Manager {
 }
 
 func (manager *Manager) ServeWS(c *gin.Context) {
-	user_id, err := auth.ExtractIdFromContext(c)
+	user_id, err := authentication.ExtractIdFromContext(c)
 	if err != nil {
 		log.Println("error getting id from context")
 		c.JSON(

@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/SunilKividor/shafasrm/internal/auth"
+	"github.com/SunilKividor/shafasrm/internal/authentication"
 	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
 	"github.com/SunilKividor/shafasrm/internal/models"
 	"github.com/SunilKividor/shafasrm/internal/repository/pgrepo"
@@ -43,7 +43,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := auth.GenerateTokens(id)
+	accessToken, refreshToken, err := authentication.GenerateTokens(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg":   "Generating Tokens",
@@ -118,7 +118,7 @@ func RegisterUser(c *gin.Context) {
 		})
 	}
 
-	accessToken, refreshToken, err := auth.GenerateTokens(userID)
+	accessToken, refreshToken, err := authentication.GenerateTokens(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg":   "error creating access and refresh tokens",
@@ -156,7 +156,7 @@ func RefreshToken(c *gin.Context) {
 	}
 	refreshToken := body.RefreshToken
 
-	id, err := auth.ExtractIdFromToken(refreshToken)
+	id, err := authentication.ExtractIdFromToken(refreshToken)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg":   "error extracting id from token",
@@ -185,7 +185,7 @@ func RefreshToken(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := auth.RefreshAccessToken(refreshToken)
+	accessToken, err := authentication.RefreshAccessToken(refreshToken)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg":   "error refreshing token",

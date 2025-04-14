@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/SunilKividor/shafasrm/internal/auth"
+	"github.com/SunilKividor/shafasrm/internal/authentication"
 	"github.com/SunilKividor/shafasrm/internal/database/pgdb"
 	"github.com/SunilKividor/shafasrm/internal/models"
 	"github.com/SunilKividor/shafasrm/internal/repository/pgrepo"
@@ -25,7 +25,7 @@ func CreateUserProfile(c *gin.Context) {
 		return
 	}
 
-	id, err := auth.ExtractIdFromContext(c)
+	id, err := authentication.ExtractIdFromContext(c)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,

@@ -4,14 +4,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/SunilKividor/shafasrm/internal/auth"
+	"github.com/SunilKividor/shafasrm/internal/authentication"
 	"github.com/SunilKividor/shafasrm/internal/models"
 	"github.com/SunilKividor/shafasrm/internal/repository/aws"
 	"github.com/gin-gonic/gin"
 )
 
 func GetPresignedUrl(c *gin.Context) {
-	id, err := auth.ExtractIdFromContext(c)
+	id, err := authentication.ExtractIdFromContext(c)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
