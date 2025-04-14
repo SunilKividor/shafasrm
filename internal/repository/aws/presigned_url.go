@@ -10,6 +10,7 @@ import (
 	"github.com/SunilKividor/shafasrm/internal/util"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/google/uuid"
 )
 
@@ -97,4 +98,31 @@ func (p *PresignS3Service) GenerateDownloadUrl(ctx context.Context, key string) 
 	}
 
 	return preSignReq.URL, nil
+}
+
+func (p *PresignS3Service) VerifyObjectExists(ctx context.Context, key string) (bool, error) {
+	if key == "" {
+		return false, errors.New("key is required")
+	}
+
+	_, err := p.s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: &p.bucketName,
+		Key:    &key,
+	})
+
+	if err != nil {
+		var nsk *types.NoSuchKey
+		var nf *types.NotFound
+
+		if errors.As(err, &nsk) || errors.As(err, &nf) {
+			log.Printf("Verification : object %s not found,", key)
+			return false, nil
+		}
+
+		log.Printf("Error Verifying object %s:%v", key, err)
+		return false, err
+	}
+
+	log.Printf("Verification: Object %s found.", key)
+	return true, nil
 }

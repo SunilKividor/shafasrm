@@ -39,8 +39,9 @@ func Router(router *gin.Engine) {
 		user.POST("/details", handler.AddUserDetails) //add user details
 		user.PUT("/details", handler.AddUserDetails)  //update user details //todo
 
-		user.POST("/photos/pre-signed-url", handler.GetPresignedUploadUrl) //Generate S3 URL
-		user.POST("/photos", handler.GetPresignedUploadUrl)                //Store Photo URL //todo
+		user.GET("/photos/pre-signed-url", handler.GetPresignedUploadUrl) //Generate S3 URL
+		user.POST("/photos", handler.StorePhotoKey)                       //Store photo url                                            //Store Photo URL //todo
+		user.GET("/photos", handler.GetPresignedDownloadUrl)              //Get Photo URL //todo
 
 		user.POST("/swipes", handler.Swipe)                          //Record a Swipe
 		user.GET("/swipes/feed", handler.SwipeFeed)                  //Get Swipable Profiles
