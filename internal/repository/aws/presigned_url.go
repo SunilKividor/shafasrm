@@ -32,7 +32,7 @@ type PresignS3Service struct {
 	bucketName         string
 	uploadExpiry       time.Duration
 	downloadExpiry     time.Duration
-	uploadKeyGenerator func(userID uuid.UUID) string
+	uploadKeyGenerator func(userID uuid.UUID, contentType string) string
 }
 
 func NewPresignS3Service(cfg aws.Config, bucketName string) (*PresignS3Service, error) {
@@ -43,8 +43,8 @@ func NewPresignS3Service(cfg aws.Config, bucketName string) (*PresignS3Service, 
 	s3Client := s3.NewFromConfig(cfg)
 	preSignClient := s3.NewPresignClient(s3Client)
 
-	defaultUploadGenerator := func(userID uuid.UUID) string {
-		return util.GenerateNewAWSObjectKey(s3UploadKeyPrefix, userID)
+	defaultUploadGenerator := func(userID uuid.UUID, contentType string) string {
+		return util.GenerateNewAWSObjectKey(s3UploadKeyPrefix, userID, contentType)
 	}
 
 	return &PresignS3Service{
@@ -63,7 +63,7 @@ func (p *PresignS3Service) GenerateUploadUrl(ctx context.Context, userID uuid.UU
 	}
 	preSignClient := p.preSignClient
 
-	key := p.uploadKeyGenerator(userID)
+	key := p.uploadKeyGenerator(userID, contentType)
 
 	preSignReq, err := preSignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket:      &p.bucketName,
