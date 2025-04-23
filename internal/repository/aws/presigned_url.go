@@ -18,6 +18,7 @@ const (
 	s3UploadKeyPrefix     = "users/uploads"
 	defaultUploadExpiry   = 5 * time.Minute
 	defaultDownloadExpiry = 30 * time.Minute
+	contentTypePrefix     = "image"
 )
 
 type PreSigner interface {
@@ -63,12 +64,16 @@ func (p *PresignS3Service) GenerateUploadUrl(ctx context.Context, userID uuid.UU
 	}
 	preSignClient := p.preSignClient
 
-	key := p.uploadKeyGenerator(userID, contentType)
+	mime := fmt.Sprintf("%s/%s", contentTypePrefix, contentType)
+
+	log.Println(mime)
+
+	key := p.uploadKeyGenerator(userID, mime)
 
 	preSignReq, err := preSignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket:      &p.bucketName,
 		Key:         &key,
-		ContentType: &contentType,
+		ContentType: &mime,
 	}, s3.WithPresignExpires(p.uploadExpiry),
 	)
 

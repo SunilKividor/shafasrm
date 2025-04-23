@@ -89,5 +89,24 @@ func SwipeFeed(c *gin.Context) {
 		return
 	}
 
+	var photoKeys []string
+
+	for _, objs := range feed {
+		photoKeys = append(photoKeys, objs.PhotoUrl)
+	}
+
+	urls, err := multiPreSignedGetUrls(photoKeys)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg":   "error getting pre-signed photo urls",
+			"error": err.Error(),
+		})
+		return
+	}
+
+	for i, url := range urls {
+		feed[i].PhotoUrl = url
+	}
+
 	c.JSON(http.StatusOK, feed)
 }

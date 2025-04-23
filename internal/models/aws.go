@@ -19,3 +19,7 @@ type PhotoResponse struct {
 	URL       string `json:"url"`
 	IsPrimary bool   `json:"is_primary"`
 }
+
+type PhotoKeys struct {
+	PhotoKeys []string `json:"photo_keys"` // An array of strings
+}

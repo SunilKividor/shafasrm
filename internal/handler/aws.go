@@ -28,11 +28,12 @@ func GetPresignedUploadUrl(c *gin.Context) {
 		return
 	}
 
-	contentType := c.Query("contentType")
+	contentType := c.Query("content_type")
 	if contentType == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "content type not found",
-			"error": "invalid req",
+			"msg":          "content type not found",
+			"error":        "invalid req",
+			"content-type": contentType,
 		})
 		return
 	}
@@ -72,7 +73,7 @@ func GetPresignedUploadUrl(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func GetPresignedDownloadUrl(c *gin.Context) {
+func GetAllUserPhotos(c *gin.Context) {
 	id, err := authentication.ExtractIdFromContext(c)
 	if err != nil {
 		c.JSON(
@@ -82,26 +83,6 @@ func GetPresignedDownloadUrl(c *gin.Context) {
 				"error": err.Error(),
 			},
 		)
-		return
-	}
-
-	awsDefaultConfig, err := configs.DefaultConfig()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg":   "aws config error",
-			"error": err.Error(),
-		})
-		return
-	}
-
-	bucketName := os.Getenv("S3BUCKETNAME")
-	ctx := context.TODO()
-	preSignUrlService, err := aws.NewPresignS3Service(awsDefaultConfig, bucketName)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg":   "PreSignUrl sercvice error",
-			"error": err.Error(),
-		})
 		return
 	}
 
@@ -116,21 +97,51 @@ func GetPresignedDownloadUrl(c *gin.Context) {
 		})
 		return
 	}
-	var res []models.PhotoResponse
+	var keys []string
 	for _, key := range photoKeys {
-		url, err := preSignUrlService.GenerateDownloadUrl(ctx, key.Key)
+		keys = append(keys, key.Key)
+	}
+	urls, err := multiPreSignedGetUrls(keys)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg":   "error getting pre-signed photo urls",
+			"error": err.Error(),
+		})
+		return
+	}
+	for i, url := range urls {
+		photoKeys[i].Key = url
+	}
+
+	c.JSON(http.StatusOK, photoKeys)
+}
+
+func multiPreSignedGetUrls(photoKeys []string) ([]string, error) {
+	awsDefaultConfig, err := configs.DefaultConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	bucketName := os.Getenv("S3BUCKETNAME")
+	ctx := context.TODO()
+	preSignUrlService, err := aws.NewPresignS3Service(awsDefaultConfig, bucketName)
+	if err != nil {
+		return nil, err
+	}
+
+	var urls []string
+	for _, key := range photoKeys {
+		url, err := preSignUrlService.GenerateDownloadUrl(ctx, key)
 		if err != nil {
 			log.Println(err.Error())
 			continue
 		}
-		var photo models.PhotoResponse
-		photo.URL = url
-		photo.IsPrimary = key.IsPrimary
+		photoUrl := url
 
-		res = append(res, photo)
+		urls = append(urls, photoUrl)
 	}
 
-	c.JSON(http.StatusOK, res)
+	return urls, nil
 }
 
 func StorePhotoKey(c *gin.Context) {
